@@ -1,4 +1,8 @@
-require('dotenv').config(); // https://www.npmjs.com/package/dotenv
+// https://www.npmjs.com/package/dotenv
+
+import { createServer, IncomingMessage, ServerResponse } from 'http';
+
+require('dotenv').config();
 
 const moduleFunction = async (runSuccessfully: boolean) => {
   if (runSuccessfully) {
@@ -8,8 +12,17 @@ const moduleFunction = async (runSuccessfully: boolean) => {
 };
 
 (async () => {
-  const response = await moduleFunction(true);
-  console.log(response);
+  createServer(async (_req: IncomingMessage, res: ServerResponse) => {
+    try {
+      const response = await moduleFunction(false);
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.write(response);
+      res.end();
+    } catch (e: unknown) {
+      res.statusCode = 400;
+      res.end('{"statusCode": 400, "error": "Bad Request", "message": "This is the message"}');
+    }
+  }).listen(8080);
 })().catch((e: Error) => {
   console.error(e);
   process.exit(1);
